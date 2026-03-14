@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CogniScan – Анализ когнитивных нарушений</title>
+    <!-- Bootstrap 5 + иконки Font Awesome + Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f0f4ff 0%, #d9e4ff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 20, 60, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 50px rgba(0, 20, 80, 0.25);
+        }
+
+        /* Белая кнопка с анимацией */
+        .btn-white {
+            background: #fff;
+            border: 1px solid rgba(180, 150, 200, 0.3);
+            border-radius: 50px;
+            padding: 0.9rem 2.5rem;
+            font-weight: 600;
+            color: #4a4f6e;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .btn-white::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(180, 200, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+        .btn-white:hover {
+            background: #f8f2ff;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(100, 80, 150, 0.15);
+            border-color: rgba(150, 120, 200, 0.5);
+        }
+        .btn-white:hover::before {
+            left: 100%;
+        }
+        .btn-animate {
+            animation: gentlePulse 2s infinite;
+        }
+        @keyframes gentlePulse {
+            0% { box-shadow: 0 0 0 0 rgba(150, 120, 200, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(150, 120, 200, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(150, 120, 200, 0); }
+        }
+
+        .btn-outline-custom {
+            border-radius: 40px;
+            padding: 10px 25px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.6);
+            color: #2d3748;
+            transition: all 0.2s;
+        }
+        .btn-outline-custom:hover {
+            background: white;
+            border-color: white;
+            color: #4a5568;
+        }
+
+        .file-input {
+            background: rgba(255,255,255,0.8);
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 2px dashed #a0aec0;
+            transition: border 0.2s;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-input:focus-within {
+            border-color: #667eea;
+        }
+        .file-input .form-control {
+            border: none;
+            background: transparent;
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem 0;
+        }
+        .file-input .form-control:focus {
+            box-shadow: none;
+            outline: none;
+        }
+
+        .pred-badge {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+        .pred-mci {
+            background: #feb2b2;
+            color: #9b2c2c;
+        }
+        .pred-healthy {
+            background: #9ae6b4;
+            color: #276749;
+        }
+
+        .result-card {
+            border-radius: 1.5rem;
+            background: white;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .progress-thin {
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 0.5rem 0 1rem;
+        }
+        .progress-bar-custom {
+            background: #667eea;
+            border-radius: 20px;
+        }
+        .progress-bar-custom.mci {
+            background: #f68787;
+        }
+
+        .animate-fade {
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Стили для оверлея загрузки (спиннер) */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #loading-overlay .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: #667eea;
+        }
+        #loading-overlay p {
+            margin-top: 1rem;
+            font-weight: 600;
+            color: #4a4f6e;
+        }
+    </style>
+</head>
+<body>
+    <!--часть для показа загрузки результата-->
+    <div id="loading-overlay">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p>Анализируем файл, пожалуйста, подождите...</p>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- главная страница -->
+                <div class="glass-card p-5 mb-4 text-center animate-fade">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-brain fa-3x me-3" style="color:#667eea;"></i>
+                        <h1 class="display-5 fw-bold" style="color: #2d3748;">CogniScan</h1>
+                    </div>
+                    <p class="lead mb-4" style="color: #4a5568;"> Анализ склонности к когнитивным нарушениям (МКС)</p>
+
+                    <a href="{{ results_url }}" class="btn btn-outline-custom mb-4">
+                        <i class="fas fa-history me-2"></i> История анализов
+                    </a>
+
+                    <form method="post" enctype="multipart/form-data" class="mb-3" id="upload-form">
+                        <div class="file-input">
+                            <i class="fas fa-cloud-upload-alt fa-2x me-3" style="color:#718096;"></i>
+                            <input type="file" name="file" accept=".cha" class="form-control" required>
+                            <div class="text-box">
+                                <button type="submit" class="btn btn-white btn-animate" id="submit-btn">
+                                    <i class="fas fa-microscope me-2"></i>Анализировать
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted"> Поддерживаются файлы формата .CHA</small>
+                    </form>
+                </div>
+
+                <!-- результат -->
+                {% if result %}
+                <div class="result-card animate-fade">
+                    <h3 class="fw-bold mb-4"><i class="fas fa-chart-line me-2" style="color:#667eea;"></i>Результаты анализа</h3>
+
+                    <!-- полная модель -->
+                    <div class="mb-5">
+                        <h5 class="text-uppercase text-muted fw-bold mb-3">
+                            <i class="fas fa-brain me-2"></i>Полная модель
+                        </h5>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="pred-badge {{ 'pred-mci' if result.full_model.pred == 'MCI' else 'pred-healthy' }} me-3">
+                                {{ result.full_model.pred }}
+                            </span>
+                            <span class="text-muted">предсказание</span>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Вероятность MCI:</span>
+                                    <strong>{{ result.full_model.prob_mci }}</strong>
+                                </div>
+                                <div class="progress-thin">
+                                    <div class="progress-bar-custom mci" role="progressbar"
+                                         style="width:{{ (result.full_model.prob_mci|float*100) }}%;"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Вероятность здоров:</span>
+                                    <strong>{{ result.full_model.prob_healthy }}</strong>
+                                </div>
+                                <div class="progress-thin">
+                                    <div class="progress-bar-custom" role="progressbar"
+                                         style="width:{{ (result.full_model.prob_healthy|float*100) }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--модель тональности-->
+                    <div>
+                        <h5 class="text-uppercase text-muted fw-bold mb-3">
+                            <i class="fas fa-smile me-2"></i>Модель (только тональность)
+                        </h5>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="pred-badge {{ 'pred-mci' if result.sentiment_model.pred == 'MCI' else 'pred-healthy' }} me-3">
+                                {{ result.sentiment_model.pred }}
+                            </span>
+                            <span class="text-muted">предсказание</span>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Вероятность MCI:</span>
+                                    <strong>{{ result.sentiment_model.prob_mci }}</strong>
+                                </div>
+                                <div class="progress-thin">
+                                    <div class="progress-bar-custom mci" role="progressbar"
+                                         style="width:{{ (result.sentiment_model.prob_mci|float*100) }}%;"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Вероятность здоров:</span>
+                                    <strong>{{ result.sentiment_model.prob_healthy }}</strong>
+                                </div>
+                                <div class="progress-thin">
+                                    <div class="progress-bar-custom" role="progressbar"
+                                         style="width:{{ (result.sentiment_model.prob_healthy|float*100) }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            const form = document.getElementById('upload-form');
+            const overlay = document.getElementById('loading-overlay');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Показываем спиннер
+                    overlay.style.display = 'flex';
+                    // Блокируем кнопку, чтобы избежать двойной отправки
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+
+            // Если страница загрузилась (например, после перезагрузки), скрываем спиннер
+            window.addEventListener('load', function() {
+                overlay.style.display = 'none';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
