@@ -1,0 +1,13 @@
+pandas
+numpy
+scikit-learn
+torch
+transformers
+openpyxl
+Flask
+os
+pickle
+csv
+sklearn
+re
+
