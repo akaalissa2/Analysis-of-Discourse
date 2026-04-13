@@ -37,8 +37,7 @@ plt.title("Confusion Matrix - Полная модель")
 plt.savefig("cm_full.png", dpi=150, bbox_inches="tight")
 plt.show()
 
-# ---------- Модель только тональности ----------
-X_sent_only = X_full[:, -6:]  # последние 6 признаков — тональность
+X_sent_only = X_full[:, -6:]  
 model_sent, scaler_sent, metrics_sent, X_test_sent, y_test_sent, y_pred_sent, y_proba_sent = train_model(X_sent_only, y)
 
 print("\n=== Модель только тональности ===")
